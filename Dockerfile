@@ -7,7 +7,7 @@ ENV TZ=Asia/Shanghai \
     CHECKIN_COOKIES=/config/cookies.yaml \
     CHECKIN_DB=/data/checkin.sqlite \
     CHECKIN_HOST=0.0.0.0 \
-    CHECKIN_PORT=8080
+    CHECKIN_PORT=18320
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tzdata \
@@ -23,6 +23,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY checkin ./checkin
 
 VOLUME ["/config", "/data"]
-EXPOSE 8080
+EXPOSE 18320
 
 CMD ["python", "-m", "checkin"]

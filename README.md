@@ -39,7 +39,7 @@ python3 -m venv .venv
 CHECKIN_CONFIG=config/config.yaml CHECKIN_COOKIES=config/cookies.yaml \
   CHECKIN_DB=data/checkin.sqlite .venv/bin/python -m checkin --run-now hhanclub
 
-# scheduler + status page on http://localhost:8080
+# scheduler + status page on http://localhost:18320
 CHECKIN_CONFIG=config/config.yaml CHECKIN_COOKIES=config/cookies.yaml \
   CHECKIN_DB=data/checkin.sqlite .venv/bin/python -m checkin
 ```
@@ -50,7 +50,7 @@ in a cron job instead.
 
 Paths default to `/config/config.yaml`, `/config/cookies.yaml` and
 `/data/checkin.sqlite` (the container layout); `CHECKIN_HOST` and
-`CHECKIN_PORT` default to `0.0.0.0:8080`.
+`CHECKIN_PORT` default to `0.0.0.0:18320`.
 
 ## Run in Docker
 
@@ -59,7 +59,7 @@ docker compose up -d --build
 ```
 
 `./config` and `./data` are mounted into the container; the page is on port
-8080. The image sets `TZ=Asia/Shanghai`, so 03:20 means 03:20 whatever the
+18320. The image sets `TZ=Asia/Shanghai`, so 03:20 means 03:20 whatever the
 host clock says.
 
 The page has no authentication and its buttons fire real requests — keep it on

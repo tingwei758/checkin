@@ -48,7 +48,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     runner.start()
     app = create_app(runner, store)
     host = os.environ.get("CHECKIN_HOST", "0.0.0.0")
-    port = int(os.environ.get("CHECKIN_PORT", "8080"))
+    port = int(os.environ.get("CHECKIN_PORT", "18320"))
     logging.getLogger("checkin").info("status page on http://%s:%d", host, port)
     app.run(host=host, port=port, threaded=True, use_reloader=False)
     return EXIT_OK
