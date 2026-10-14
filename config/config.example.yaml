@@ -1,0 +1,30 @@
+# Copy to config.yaml and edit. Patterns are Python regexes matched against the
+# response body; the text matched by `success` (or `already`) is what the status
+# page shows, so keep the whole sentence in the match.
+run_at: "03:20"
+timezone: Asia/Shanghai
+jitter_minutes: 20
+retention_days: 90
+history_days: 7
+
+defaults:
+  impersonate: chrome
+
+sites:
+  - name: hhanclub
+    url: https://hhanclub.net/attendance.php
+    success: "这是您的第\\s*\\d+\\s*次签到[^<]*"
+    already: "你今天已经签到过了"
+    streak: "已连续签到\\s*(\\d+)\\s*天"
+
+  - name: hdfans
+    url: https://hdfans.org/attendance.php
+    success: "这是您的第\\s*\\d+\\s*次签到[^<]*"
+    already: "你今天已经签到过了"
+    streak: "已连续签到\\s*(\\d+)\\s*天"
+
+  # Optional per-site keys:
+  #   impersonate: chrome120     # override the curl_cffi fingerprint
+  #   enabled: false             # keep the row, stop checking in
+  #   headers:                   # e.g. match the browser the cookie came from
+  #     User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ..."

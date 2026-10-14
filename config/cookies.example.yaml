@@ -1,0 +1,4 @@
+# Copy to cookies.yaml. One line per site, the name matching config.yaml.
+# Paste the whole Cookie request header from your browser's devtools.
+hhanclub: "c_secure_uid=REPLACE; c_secure_pass=REPLACE; c_secure_ssl=REPLACE"
+hdfans: "c_secure_uid=REPLACE; c_secure_pass=REPLACE; c_secure_ssl=REPLACE"
