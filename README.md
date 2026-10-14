@@ -44,6 +44,14 @@ CHECKIN_CONFIG=config/config.yaml CHECKIN_COOKIES=config/cookies.yaml \
   CHECKIN_DB=data/checkin.sqlite .venv/bin/python -m checkin
 ```
 
+`--run-now` exits 0 when every check was fine, 1 on a config problem, 2 for an
+unknown site name, 3 when a check-in failed — handy if you ever want to wrap it
+in a cron job instead.
+
+Paths default to `/config/config.yaml`, `/config/cookies.yaml` and
+`/data/checkin.sqlite` (the container layout); `CHECKIN_HOST` and
+`CHECKIN_PORT` default to `0.0.0.0:8080`.
+
 ## Run in Docker
 
 ```bash

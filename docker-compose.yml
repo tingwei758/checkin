@@ -1,0 +1,11 @@
+services:
+  checkin:
+    build: .
+    image: checkin:latest
+    container_name: checkin
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/config
+      - ./data:/data
