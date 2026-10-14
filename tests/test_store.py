@@ -120,3 +120,26 @@ def test_detail_and_nulls_round_trip(tmp_path):
     got = s.latest("hhanclub")
     assert got.message is None and got.streak is None
     assert got.detail == "cloudflare challenge (403)"
+
+
+def test_recent_is_newest_first_and_limited(tmp_path):
+    s = store(tmp_path)
+    for day_offset in range(5):
+        s.record(
+            Attempt(
+                "hhanclub",
+                SUCCESS,
+                "day-%d" % day_offset,
+                day_offset,
+                None,
+                at(3, 20, TODAY - timedelta(days=day_offset)),
+            )
+        )
+    got = s.recent("hhanclub", limit=3)
+    assert [a.message for a in got] == ["day-0", "day-1", "day-2"]
+
+
+def test_recent_is_scoped_to_the_site(tmp_path):
+    s = store(tmp_path)
+    s.record(Attempt("hdfans", SUCCESS, "hdfans", 1, None, at(3, 20)))
+    assert s.recent("hhanclub", limit=5) == []

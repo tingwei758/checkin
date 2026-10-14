@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>签到</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <strong>签到</strong>
+      <span class="muted">{{ page.site_count }} sites configured · {{ page.ok_today }} ok today</span>
+    </div>
+    <div class="right">
+      <span class="muted">next run {{ page.next_run.strftime('%H:%M') }} {{ page.next_run.tzname() }} ({{ countdown }})</span>
+      <form method="post" action="{{ url_for('run_all') }}"><button type="submit">Check in all now</button></form>
+    </div>
+  </header>
+
+  <table>
+    <thead>
+      <tr><th>site</th><th>{{ page.rows[0].dots|length if page.rows else 7 }} days</th><th>streak</th><th>last result</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for row in page.rows %}
+      <tr class="{{ 'failed' if row.failed }}{{ ' paused' if not row.enabled }}">
+        <td class="name">
+          {{ row.name }}
+          {% if not row.enabled %}<span class="badge">paused</span>
+          {% elif row.last_result == 'never run' %}<span class="badge">new</span>{% endif %}
+        </td>
+        <td class="dots">
+          {% for dot in row.dots %}<span class="dot {{ dot.outcome or 'none' }}" title="{{ dot.day }}{% if dot.outcome %} · {{ dot.outcome }}{% endif %}">{{ '○' if not dot.outcome else '●' }}</span>{% endfor %}
+        </td>
+        <td>{{ row.streak ~ 'd' if row.streak is not none else '—' }}</td>
+        <td class="result">
+          {{ row.last_result }}
+          {% if row.last_at %}<span class="muted"> · {{ row.last_at.strftime('%H:%M') if row.last_at.date() == now.date() else row.last_at.strftime('%m-%d') }}</span>{% endif %}
+          {% if row.failed and row.attempts_today > 1 %}<span class="muted"> · {{ row.attempts_today }} attempts</span>{% endif %}
+        </td>
+        <td class="right">
+          <form method="post" action="{{ url_for('run_one', name=row.name) }}"><button type="submit" class="small">run</button></form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="banner {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <p class="muted foot">per-attempt detail is in the container log · {{ now.strftime('%Y-%m-%d %H:%M') }}</p>
+</main>
+</body>
+</html>

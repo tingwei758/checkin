@@ -85,6 +85,16 @@ class Store:
             ).fetchone()
         return _row_to_attempt(row) if row else None
 
+    def recent(self, site: str, limit: int = 30) -> List[Attempt]:
+        """The newest attempts first — used to find the last known streak."""
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT site, outcome, message, streak, detail, at FROM attempts"
+                " WHERE site = ? ORDER BY at DESC, id DESC LIMIT ?",
+                (site, limit),
+            ).fetchall()
+        return [_row_to_attempt(row) for row in rows]
+
     def day_outcomes(self, site: str, days: Sequence[date]) -> Dict[date, str]:
         if not days:
             return {}
