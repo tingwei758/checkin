@@ -147,3 +147,64 @@ def test_check_passes_site_headers_to_fetch():
 
 def test_check_returns_the_classified_result():
     assert check(site(), fetch_fn=lambda s: (200, HHAN)).streak == 1
+
+
+# The real hdfans reply: NexusPHP wraps every number in <b> tags.
+HDFANS_TAGGED = (
+    '<h2 align="left">签到成功</h2><table><tr><td class="text"> '
+    "<p>这是您的第 <b>1314</b> 次签到，已连续签到 <b>892</b> 天，本次签到获得 <b>100</b> 个魔力值。"
+    "点击白色背景的圆点进行补签。你目前拥有补签卡 <b>10</b> 张。"
+    '<span style="float:right">今日签到排名：<b>802</b> / <b>5174</b></span></p></td></tr></table>'
+)
+SENTENCE_PATTERN = "这是您的第\\s*\\d+\\s*次签到[^。]*。"
+
+
+def tagged_site():
+    return Site(
+        name="hdfans",
+        url="https://hdfans.org/attendance.php",
+        success=SENTENCE_PATTERN,
+        already=ALREADY_PATTERN,
+        streak=STREAK_PATTERN,
+        impersonate="chrome",
+        headers={"Cookie": "uid=1"},
+        cookie="uid=1",
+        enabled=True,
+    )
+
+
+def test_numbers_wrapped_in_tags_still_match():
+    r = classify(tagged_site(), 200, HDFANS_TAGGED)
+    assert r.outcome == SUCCESS
+    assert r.streak == 892
+
+
+def test_message_from_a_tagged_page_carries_no_markup():
+    r = classify(tagged_site(), 200, HDFANS_TAGGED)
+    assert "<b>" not in r.message and "<" not in r.message
+    assert "这是您的第 1314 次签到" in r.message
+    assert "获得 100 个魔力值" in r.message
+
+
+def test_message_stops_at_the_end_of_the_sentence():
+    r = classify(tagged_site(), 200, HDFANS_TAGGED)
+    assert "今日签到排名" not in r.message
+
+
+def test_entities_are_decoded_before_matching():
+    body = "<p>这是您的第 <b>5</b> 次签到&nbsp;，已连续签到 <b>5</b> 天，获得 10 个魔力值。</p>"
+    r = classify(tagged_site(), 200, body)
+    assert r.outcome == SUCCESS and r.streak == 5
+
+
+def test_script_contents_are_not_matched():
+    body = "<script>var s = '这是您的第 1 次签到，已连续签到 1 天。';</script><p>你今天已经签到过了</p>"
+    assert classify(tagged_site(), 200, body).outcome == ALREADY
+
+
+def test_failure_excerpt_is_readable_text_not_markup():
+    body = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><p>请先登录</p></body></html>'
+    r = classify(tagged_site(), 200, body)
+    assert r.outcome == FAILURE
+    assert "DOCTYPE" not in r.detail
+    assert "请先登录" in r.detail
