@@ -44,13 +44,20 @@ def create_app(runner, store: Store) -> Flask:
             result = runner.run_named(name, force=True)
         except KeyError:
             abort(404)
+        except ConfigError as exc:
+            flash(str(exc), "error")
+            return redirect(url_for("index"))
         flash("%s — %s" % (name, result.message or result.detail or result.outcome),
               "error" if result.outcome == FAILURE else "ok")
         return redirect(url_for("index"))
 
     @app.post("/run-all")
     def run_all():
-        results = runner.run_all(force=True)
+        try:
+            results = runner.run_all(force=True)
+        except ConfigError as exc:
+            flash(str(exc), "error")
+            return redirect(url_for("index"))
         failed = [name for name, result in results.items() if result.outcome == FAILURE]
         if failed:
             flash("ran %d sites, %d failed: %s" % (len(results), len(failed), ", ".join(failed)), "error")

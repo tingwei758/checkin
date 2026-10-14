@@ -156,3 +156,33 @@ def test_index_survives_a_config_error(tmp_path):
     app.config.update(TESTING=True)
     html = app.test_client().get("/").get_data(as_text=True)
     assert "config.yaml" in html
+
+
+def _broken_app(tmp_path):
+    from checkin.config import ConfigError
+
+    class BrokenRunner(FakeRunner):
+        def config(self):
+            raise ConfigError("%s: broken" % (tmp_path / "config.yaml"))
+
+        def run_named(self, name, force=True):
+            raise ConfigError("%s: broken" % (tmp_path / "config.yaml"))
+
+        def run_all(self, force=True):
+            raise ConfigError("%s: broken" % (tmp_path / "config.yaml"))
+
+    app = create_app(BrokenRunner(None, {}), Store(tmp_path / "d.sqlite"))
+    app.config.update(TESTING=True)
+    return app.test_client()
+
+
+def test_run_one_with_a_broken_config_shows_the_problem(tmp_path):
+    resp = _broken_app(tmp_path).post("/run/hhanclub", follow_redirects=True)
+    assert resp.status_code == 200
+    assert "config.yaml" in resp.get_data(as_text=True)
+
+
+def test_run_all_with_a_broken_config_shows_the_problem(tmp_path):
+    resp = _broken_app(tmp_path).post("/run-all", follow_redirects=True)
+    assert resp.status_code == 200
+    assert "config.yaml" in resp.get_data(as_text=True)
