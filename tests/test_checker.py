@@ -208,3 +208,33 @@ def test_failure_excerpt_is_readable_text_not_markup():
     assert r.outcome == FAILURE
     assert "DOCTYPE" not in r.detail
     assert "请先登录" in r.detail
+
+
+# KamePT's reply to a rejected session: attendance.php 302s to login.php.
+LOGIN_PAGE = (
+    "<title>KamePT :: 登录</title><h2>未登录!</h2>"
+    "<p>错误: 该页面必须在登录后才能访问</p>"
+    '<form method="post" action="takelogin.php"><input name="username"><input name="password" type="password"></form>'
+)
+
+
+def test_login_page_is_reported_as_an_expired_cookie():
+    r = classify(site(), 200, LOGIN_PAGE)
+    assert r.outcome == FAILURE
+    assert r.detail == "cookie expired (login page)"
+
+
+def test_login_page_detection_survives_a_redirect_body():
+    body = '<a href="login.php?returnto=attendance.php">login.php?returnto=attendance.php</a>'
+    assert classify(site(), 200, body).detail == "cookie expired (login page)"
+
+
+def test_a_success_page_mentioning_login_is_still_a_success():
+    body = HHAN + '<a href="logout.php">退出</a><a href="login.php">login.php</a>'
+    assert classify(site(), 200, body).outcome == SUCCESS
+
+
+def test_an_unrecognised_page_still_reports_an_excerpt():
+    r = classify(site(), 200, "<p>系统维护中，请稍后再试</p>")
+    assert "no pattern match" in r.detail
+    assert "系统维护中" in r.detail

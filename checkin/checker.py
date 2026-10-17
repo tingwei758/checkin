@@ -28,6 +28,15 @@ CLOUDFLARE_MARKERS = (
 )
 CLOUDFLARE_STATUSES = (403, 429, 503)
 
+#: A rejected session: the tracker served its login page instead of the
+#: check-in. Worth naming, because the fix is "paste a fresh cookie".
+LOGIN_MARKERS = (
+    "takelogin.php",
+    "login.php?returnto",
+    "该页面必须在登录后才能访问",
+    "未登录",
+)
+
 
 @dataclass(frozen=True)
 class CheckResult:
@@ -59,6 +68,9 @@ def classify(site: Site, status_code: int, body: str) -> CheckResult:
         match = re.search(site.already, text)
         if match:
             return CheckResult(ALREADY, message=_collapse(match.group(0)), streak=_streak(site, text))
+
+    if _looks_like_login(body, text):
+        return CheckResult(FAILURE, detail="cookie expired (login page)")
 
     return CheckResult(FAILURE, detail="no pattern match: " + _excerpt(text))
 
@@ -95,6 +107,11 @@ def visible_text(body: str) -> str:
     without_code = re.sub(r"(?is)<(script|style)\b.*?</\1\s*>", " ", body)
     without_tags = re.sub(r"(?s)<[^>]*>", " ", without_code)
     return _collapse(html.unescape(without_tags).replace("\xa0", " "))
+
+
+def _looks_like_login(body: str, text: str) -> bool:
+    haystack = (body + " " + text).lower()
+    return any(marker.lower() in haystack for marker in LOGIN_MARKERS)
 
 
 def _looks_like_cloudflare(status_code: int, body: str) -> bool:
