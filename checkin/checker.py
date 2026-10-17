@@ -96,7 +96,7 @@ def check(site: Site, fetch_fn: Optional[Callable[[Site], Tuple[int, str]]] = No
     try:
         status_code, body = fetch_fn(site)
     except Exception as exc:  # noqa: BLE001 - any failure is a failed check-in, not a crash
-        detail = "%s: %s" % (type(exc).__name__, exc)
+        detail = "%s: %s" % (type(exc).__name__, _without_curl_boilerplate(str(exc)))
         return CheckResult(FAILURE, detail=detail[:EXCERPT_CHARS + 40])
 
     return classify(site, status_code, body)
@@ -107,6 +107,12 @@ def visible_text(body: str) -> str:
     without_code = re.sub(r"(?is)<(script|style)\b.*?</\1\s*>", " ", body)
     without_tags = re.sub(r"(?s)<[^>]*>", " ", without_code)
     return _collapse(html.unescape(without_tags).replace("\xa0", " "))
+
+
+def _without_curl_boilerplate(message: str) -> str:
+    """curl's errors end in a documentation URL that the status page doesn't need."""
+    trimmed = re.sub(r"\s*See https://curl\.se/\S*.*$", "", message).strip()
+    return trimmed or message
 
 
 def _looks_like_login(body: str, text: str) -> bool:

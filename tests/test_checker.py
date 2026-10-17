@@ -238,3 +238,19 @@ def test_an_unrecognised_page_still_reports_an_excerpt():
     r = classify(site(), 200, "<p>系统维护中，请稍后再试</p>")
     assert "no pattern match" in r.detail
     assert "系统维护中" in r.detail
+
+
+def test_curl_boilerplate_is_trimmed_from_the_reason():
+    class DNSError(Exception):
+        pass
+
+    def boom(_site):
+        raise DNSError(
+            "Failed to perform, curl: (6) Could not resolve host: hdatmos.club. "
+            "See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+        )
+
+    detail = check(site(), fetch_fn=boom).detail
+    assert "curl.se" not in detail
+    assert "Could not resolve host: hdatmos.club" in detail
+    assert detail.startswith("DNSError:")
