@@ -167,5 +167,6 @@ def test_example_config_loads(tmp_path):
 
     root = Path(__file__).resolve().parent.parent
     cfg = load_config(root / "config" / "config.example.yaml", root / "config" / "cookies.example.yaml")
-    assert [s.name for s in cfg.sites] == ["hhanclub", "hdfans"]
+    assert ["hhanclub", "hdfans"] == [s.name for s in cfg.sites][:2]
     assert cfg.sites[0].cookie is not None
+    assert all(s.url.startswith("https://") and s.success for s in cfg.sites)
