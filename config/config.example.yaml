@@ -23,6 +23,13 @@ sites:
     already: "你今天已经签到过了"
     streak: "已连续签到\\s*(\\d+)\\s*天"
 
+  # Some trackers answer with a few bytes of plain text instead of a page, and
+  # have no streak to scrape — leave `streak` out and the page shows “—”.
+  - name: pttime
+    url: https://www.pttime.org/attendance.php
+    success: "签到成功[^。]*。?"
+    already: "已签到[^。]*"
+
   # Optional per-site keys:
   #   impersonate: chrome120     # override the curl_cffi fingerprint
   #   enabled: false             # keep the row, stop checking in
