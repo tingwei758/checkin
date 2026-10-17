@@ -14,13 +14,13 @@ sites:
   - name: hhanclub
     url: https://hhanclub.net/attendance.php
     success: "这是您的第\\s*\\d+\\s*次签到[^。]*。"
-    already: "你今天已经签到过了"
+    already: "[你您]今天已经签到过了[^。]*。?"
     streak: "已连续签到\\s*(\\d+)\\s*天"
 
   - name: hdfans
     url: https://hdfans.org/attendance.php
     success: "这是您的第\\s*\\d+\\s*次签到[^。]*。"
-    already: "你今天已经签到过了"
+    already: "[你您]今天已经签到过了[^。]*。?"
     streak: "已连续签到\\s*(\\d+)\\s*天"
 
   # Some trackers answer with a few bytes of plain text instead of a page, and
